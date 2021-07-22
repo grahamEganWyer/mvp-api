@@ -16,20 +16,27 @@ app.get('/api/warcraftlogs-client', (req, res) => {
         password: process.env.CLIENT_SECRET,
       },
     })
-    .then((response) => axios.post('https://classic.warcraftlogs.com/api/v2/client', {
-      query: `query { characterData { character( name: "${req.query.name}", serverSlug: "${req.query.serverSlug}", serverRegion: "${req.query.serverRegion}") {zoneRankings(byBracket: true)}} }`,
-    }, {
-      headers: {
-        Authorization: `Bearer ${response.data.access_token}`,
-      },
-    }))
+    .then((response) => {
+      console.log('first promisde');
+      console.log(req);
+      return axios.post('https://classic.warcraftlogs.com/api/v2/client', {
+        query: `query { characterData { character( name: "${req.query.name}", serverSlug: "${req.query.serverSlug}", serverRegion: "${req.query.serverRegion}") {zoneRankings(byBracket: true)}} }`,
+      }, {
+        headers: {
+          Authorization: `Bearer ${response.data.access_token}`,
+        },
+      });
+    })
+    // eslint-disable-next-line consistent-return
     .then((response) => {
       if (response.data.data.characterData.character) {
         return response.data.data.characterData.character.zoneRankings;
       }
-      return res.status(400).send('no character data');
+      res.status(400).send('no character data');
     })
-    .then((data) => res.json(data));
+    .then((data) => {
+      res.json(data);
+    });
 });
 
 if (process.env.NODE_ENV === 'production') {
